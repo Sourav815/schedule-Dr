@@ -10,7 +10,6 @@ import { columns } from "@/components/table/columns";
 
 export default async function Admin() {
   const appointments = await getRecentAppointments();
-  // console.log(appointments.document)
   return (
     <div className="mx-auto flex max-w-7xl flex-col space-y-14">
       <header className="admin-header">

@@ -27,7 +27,7 @@ export const AppointmentForm = ({
   type: string;
   userId: string;
   patientId: string;
-  appointment?: Appointment;
+  appointment?: any;
   setOpen?: (open: boolean) => void;
 }) => {
   const router = useRouter();

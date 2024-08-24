@@ -5,8 +5,10 @@ import {
   APPOINTMENT_COLLECTION_ID,
   databases,
   DATEBASE_ID,
+  messaging,
+  PATIENT_COLLECTION_ID,
 } from "../appwrite.config";
-import { parseStringify } from "../utils";
+import { formatDateTime, parseStringify } from "../utils";
 import { ID, Query } from "node-appwrite";
 import { revalidatePath } from "next/cache";
 
@@ -41,7 +43,7 @@ export const getAppointment = async (appointmentId: string) => {
 
 export const getRecentAppointments = async () => {
   try {
-    console.log("getRecentAppointments ")
+    console.log("getRecentAppointments ");
     const appointments = await databases.listDocuments(
       DATEBASE_ID!,
       APPOINTMENT_COLLECTION_ID!,
@@ -90,8 +92,43 @@ export const updateAppointment = async ({
     if (!updatedAppointment) {
       throw new Error("Appointment data not found!");
     }
+    console.log(appointment);
+    const user = await databases.listDocuments(
+      DATEBASE_ID!,
+      PATIENT_COLLECTION_ID!,
+      [Query.equal("userId", [userId])]
+    );
+    // console.log(user.documents[0].name);
+
+    const messageContent = `
+    Hi ${user.documents[0].name},
+    ${
+      type === "schedule"
+        ? `Your appointment has been scheduled on ${formatDateTime(
+            appointment.schedule!
+          ).dateTime} for Dr. ${appointment.primaryPhysician}`
+        : `We regrete that your appointment has been cancelled due to ${appointment.cancellationReason}`
+    }
+    `;
+    // console.log(messageContent)
+    await sendNotification(userId, messageContent);
+
     revalidatePath("/admin");
     return parseStringify(updatedAppointment);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const sendNotification = async (userId: string, content: string) => {
+  try {
+    const message = await messaging.createSms(
+      ID.unique(),
+      content,
+      [],
+      [userId]
+    );
+    parseStringify(message);
   } catch (error) {
     console.log(error);
   }

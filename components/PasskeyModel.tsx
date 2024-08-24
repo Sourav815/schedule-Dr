@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/input-otp";
 import Image from "next/image";
 import { CircleX } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { decryptKey, encryptKey } from "@/lib/utils";
 
 const PasskeyModel = () => {
@@ -40,12 +40,12 @@ const PasskeyModel = () => {
     if (path) {
       if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
         setOpen(false);
-        router.push("/admin");
+        redirect("/admin");
       } else {
         setOpen(true);
       }
     }
-  }, [encryptedKey]);
+  }, [encryptedKey, path, router]);
 
   const validatePasskey = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -54,7 +54,7 @@ const PasskeyModel = () => {
     if (passkey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
       const encryptedKey = encryptKey(passkey);
       localStorage.setItem("accessKey", encryptedKey);
-      router.push("/admin");
+      redirect("/admin");
     } else {
       setError("Invalid passkey! Please try again.");
     }
